@@ -71,16 +71,3 @@ def test_merge_node_is_next_once_all_predecessors_complete():
     assert statuses[3] == Status.NEXT
 
 
-def test_status_override_wins_regardless_of_tasks_or_predecessors():
-    nodes = [
-        NodeInput(id=1, total_tasks=0, done_tasks=0, status_override=Status.LOCKED),
-        NodeInput(
-            id=2,
-            total_tasks=5,
-            done_tasks=5,
-            status_override=Status.IN_PROGRESS,
-        ),
-    ]
-    statuses = compute_statuses(nodes, edges=[(1, 2)])
-    assert statuses[1] == Status.LOCKED
-    assert statuses[2] == Status.IN_PROGRESS

@@ -8,7 +8,6 @@ def compute_node_statuses(nodes: list[Node], edges: list[Edge]) -> dict[int, Sta
             id=n.id,
             total_tasks=len(n.tasks),
             done_tasks=sum(1 for t in n.tasks if t.done),
-            status_override=n.status_override,
         )
         for n in nodes
     ]
@@ -24,7 +23,6 @@ def node_to_dict(node: Node, status: Status) -> dict:
         "description": node.description,
         "position_x": node.position_x,
         "position_y": node.position_y,
-        "status_override": node.status_override,
         "status": status,
         "total_tasks": len(node.tasks),
         "done_tasks": sum(1 for t in node.tasks if t.done),

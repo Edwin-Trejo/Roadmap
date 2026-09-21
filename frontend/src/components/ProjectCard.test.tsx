@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { ProjectSummary } from '../api/types'
 import { ProjectCard } from './ProjectCard'
 
@@ -13,10 +14,10 @@ const project: ProjectSummary = {
   next_step_titles: ['Build API', 'Write tests'],
 }
 
-function renderCard(p: ProjectSummary) {
+function renderCard(p: ProjectSummary, onDelete = vi.fn()) {
   return render(
     <MemoryRouter>
-      <ProjectCard project={p} />
+      <ProjectCard project={p} onDelete={onDelete} />
     </MemoryRouter>,
   )
 }
@@ -42,5 +43,17 @@ describe('ProjectCard', () => {
   it('links to the project roadmap page', () => {
     renderCard(project)
     expect(screen.getByRole('link')).toHaveAttribute('href', '/projects/1')
+  })
+
+  it('asks for confirmation before deleting, then calls onDelete', async () => {
+    const onDelete = vi.fn()
+    const user = userEvent.setup()
+    renderCard(project, onDelete)
+
+    await user.click(screen.getByRole('button', { name: /delete/i }))
+    expect(onDelete).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: /confirm/i }))
+    expect(onDelete).toHaveBeenCalledTimes(1)
   })
 })

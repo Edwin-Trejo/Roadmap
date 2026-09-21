@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Edge, Node, Project, User
-from app.schemas import EdgeCreate, EdgeOut
+from app.schemas import EdgeCreate, EdgeOut, EdgeUpdate
 from app.security import get_current_user
 
 router = APIRouter(tags=["edges"])
@@ -36,6 +36,22 @@ def create_edge(
         target_node_id=payload.target_node_id,
     )
     db.add(edge)
+    db.commit()
+    db.refresh(edge)
+    return edge
+
+
+@router.put("/edges/{edge_id}", response_model=EdgeOut)
+def update_edge(
+    edge_id: int,
+    payload: EdgeUpdate,
+    db: Session = Depends(get_db),
+    _user: User = Depends(get_current_user),
+):
+    edge = db.query(Edge).filter(Edge.id == edge_id).first()
+    if edge is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Edge not found")
+    edge.color = payload.color
     db.commit()
     db.refresh(edge)
     return edge

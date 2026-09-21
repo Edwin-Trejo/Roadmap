@@ -26,44 +26,42 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--bg)]">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+        className="w-full max-w-sm rounded-xl border border-[var(--border-earth)] bg-[var(--surface)] p-8 shadow-sm"
       >
-        <h1 className="mb-6 text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Roadmap
-        </h1>
+        <h1 className="mb-6 text-xl font-semibold text-[var(--ink)]">Roadmap</h1>
 
-        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+        <label className="mb-1 block text-sm font-medium text-[var(--ink-muted)]">
           Username
         </label>
         <input
-          className="mb-4 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="mb-4 w-full rounded-md border border-[var(--border-earth)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--ink)]"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
           required
         />
 
-        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+        <label className="mb-1 block text-sm font-medium text-[var(--ink-muted)]">
           Password
         </label>
         <input
           type="password"
-          className="mb-6 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="mb-6 w-full rounded-md border border-[var(--border-earth)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--ink)]"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
           required
         />
 
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+        {error && <p className="mb-4 text-sm text-[var(--danger)]">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] disabled:opacity-50"
         >
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>

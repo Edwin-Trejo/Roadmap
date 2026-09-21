@@ -1,7 +1,6 @@
 from collections import deque
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class Status(str, Enum):
@@ -16,7 +15,6 @@ class NodeInput:
     id: int
     total_tasks: int
     done_tasks: int
-    status_override: Optional[Status] = None
 
 
 def _topological_order(node_ids: list[int], edges: list[tuple[int, int]]) -> list[int]:
@@ -54,10 +52,6 @@ def compute_statuses(
 
     for nid in order:
         node = node_by_id[nid]
-        if node.status_override is not None:
-            statuses[nid] = node.status_override
-            continue
-
         if node.total_tasks > 0 and node.done_tasks >= node.total_tasks:
             statuses[nid] = Status.COMPLETE
         elif node.done_tasks > 0:

@@ -13,9 +13,7 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
-node_status = sa.Enum(
-    "complete", "in_progress", "next", "locked", name="node_status"
-)
+DEFAULT_EDGE_COLOR = "#8a6d4a"
 
 
 def upgrade() -> None:
@@ -44,7 +42,6 @@ def upgrade() -> None:
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("position_x", sa.Float(), nullable=False, server_default="0"),
         sa.Column("position_y", sa.Float(), nullable=False, server_default="0"),
-        sa.Column("status_override", node_status, nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     )
 
@@ -54,6 +51,9 @@ def upgrade() -> None:
         sa.Column("project_id", sa.Integer(), sa.ForeignKey("projects.id"), nullable=False),
         sa.Column("source_node_id", sa.Integer(), sa.ForeignKey("nodes.id"), nullable=False),
         sa.Column("target_node_id", sa.Integer(), sa.ForeignKey("nodes.id"), nullable=False),
+        sa.Column(
+            "color", sa.String(), nullable=False, server_default=DEFAULT_EDGE_COLOR
+        ),
     )
 
     op.create_table(
@@ -73,4 +73,3 @@ def downgrade() -> None:
     op.drop_table("projects")
     op.drop_index("ix_users_username", table_name="users")
     op.drop_table("users")
-    node_status.drop(op.get_bind(), checkfirst=True)

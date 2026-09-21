@@ -6,10 +6,10 @@ interface StatusDisplay {
 }
 
 const STATUS_DISPLAY: Record<NodeStatus, StatusDisplay> = {
-  complete: { label: 'Complete', color: '#16a34a' },
-  in_progress: { label: 'In Progress', color: '#d97706' },
-  next: { label: 'Next Step', color: '#2563eb' },
-  locked: { label: 'Locked', color: '#64748b' },
+  complete: { label: 'Complete', color: '#5f7a3d' },
+  in_progress: { label: 'In Progress', color: '#b8860b' },
+  next: { label: 'Next Step', color: '#a0522d' },
+  locked: { label: 'Locked', color: '#8a7f6a' },
 }
 
 export function statusDisplay(status: NodeStatus): StatusDisplay {

@@ -59,6 +59,12 @@ export const api = {
       body: JSON.stringify({ name, description }),
     }),
 
+  updateProject: (id: number, data: Partial<{ name: string; description: string }>) =>
+    request<import('./types').ProjectSummary>(`/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
   deleteProject: (id: number) => request<void>(`/projects/${id}`, { method: 'DELETE' }),
 
   getGraph: (projectId: number) =>
@@ -80,8 +86,6 @@ export const api = {
       description: string
       position_x: number
       position_y: number
-      status_override: import('./types').NodeStatus | null
-      clear_status_override: boolean
     }>,
   ) =>
     request<import('./types').RoadmapNode>(`/nodes/${nodeId}`, {
@@ -95,6 +99,12 @@ export const api = {
     request<import('./types').Edge>(`/projects/${projectId}/edges`, {
       method: 'POST',
       body: JSON.stringify({ source_node_id: sourceNodeId, target_node_id: targetNodeId }),
+    }),
+
+  updateEdge: (edgeId: number, color: string) =>
+    request<import('./types').Edge>(`/edges/${edgeId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ color }),
     }),
 
   deleteEdge: (edgeId: number) => request<void>(`/edges/${edgeId}`, { method: 'DELETE' }),

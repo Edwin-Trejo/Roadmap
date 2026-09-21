@@ -18,23 +18,17 @@ def test_update_node_position(client, auth_headers):
     assert resp.json()["position_y"] == -10
 
 
-def test_status_override_reflected_in_graph(client, auth_headers):
+def test_rename_node(client, auth_headers):
     project_id = _make_project(client, auth_headers)
     node = client.post(
         f"/projects/{project_id}/nodes", json={"title": "N"}, headers=auth_headers
     ).json()
 
-    client.put(
-        f"/nodes/{node['id']}", json={"status_override": "in_progress"}, headers=auth_headers
+    resp = client.put(
+        f"/nodes/{node['id']}", json={"title": "Design Phase"}, headers=auth_headers
     )
-    graph = client.get(f"/projects/{project_id}/graph", headers=auth_headers).json()
-    assert graph["nodes"][0]["status"] == "in_progress"
-
-    client.put(
-        f"/nodes/{node['id']}", json={"clear_status_override": True}, headers=auth_headers
-    )
-    graph = client.get(f"/projects/{project_id}/graph", headers=auth_headers).json()
-    assert graph["nodes"][0]["status"] == "next"
+    assert resp.status_code == 200
+    assert resp.json()["title"] == "Design Phase"
 
 
 def test_deleting_node_removes_its_edges(client, auth_headers):
@@ -57,6 +51,43 @@ def test_deleting_node_removes_its_edges(client, auth_headers):
     graph = client.get(f"/projects/{project_id}/graph", headers=auth_headers).json()
     assert graph["edges"] == []
     assert len(graph["nodes"]) == 1
+
+
+def test_edge_has_default_color(client, auth_headers):
+    project_id = _make_project(client, auth_headers)
+    a = client.post(
+        f"/projects/{project_id}/nodes", json={"title": "A"}, headers=auth_headers
+    ).json()
+    b = client.post(
+        f"/projects/{project_id}/nodes", json={"title": "B"}, headers=auth_headers
+    ).json()
+    edge = client.post(
+        f"/projects/{project_id}/edges",
+        json={"source_node_id": a["id"], "target_node_id": b["id"]},
+        headers=auth_headers,
+    ).json()
+    assert edge["color"]
+
+
+def test_update_edge_color(client, auth_headers):
+    project_id = _make_project(client, auth_headers)
+    a = client.post(
+        f"/projects/{project_id}/nodes", json={"title": "A"}, headers=auth_headers
+    ).json()
+    b = client.post(
+        f"/projects/{project_id}/nodes", json={"title": "B"}, headers=auth_headers
+    ).json()
+    edge = client.post(
+        f"/projects/{project_id}/edges",
+        json={"source_node_id": a["id"], "target_node_id": b["id"]},
+        headers=auth_headers,
+    ).json()
+
+    resp = client.put(
+        f"/edges/{edge['id']}", json={"color": "#5f7a3d"}, headers=auth_headers
+    )
+    assert resp.status_code == 200
+    assert resp.json()["color"] == "#5f7a3d"
 
 
 def test_task_crud(client, auth_headers):

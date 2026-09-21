@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, String
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
-from app.status import Status
+
+DEFAULT_EDGE_COLOR = "#8a6d4a"
 
 
 def _utcnow() -> datetime:
@@ -44,9 +45,6 @@ class Node(Base):
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     position_x: Mapped[float] = mapped_column(Float, default=0)
     position_y: Mapped[float] = mapped_column(Float, default=0)
-    status_override: Mapped[Status | None] = mapped_column(
-        Enum(Status, name="node_status"), nullable=True
-    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     project: Mapped["Project"] = relationship(back_populates="nodes")
@@ -62,6 +60,7 @@ class Edge(Base):
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"))
     source_node_id: Mapped[int] = mapped_column(ForeignKey("nodes.id"))
     target_node_id: Mapped[int] = mapped_column(ForeignKey("nodes.id"))
+    color: Mapped[str] = mapped_column(String, default=DEFAULT_EDGE_COLOR)
 
     project: Mapped["Project"] = relationship(back_populates="edges")
 

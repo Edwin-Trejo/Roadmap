@@ -74,10 +74,6 @@ def update_node(
         node.position_x = payload.position_x
     if payload.position_y is not None:
         node.position_y = payload.position_y
-    if payload.clear_status_override:
-        node.status_override = None
-    elif payload.status_override is not None:
-        node.status_override = payload.status_override
     db.commit()
     db.refresh(node)
     return NodeOut(**node_to_dict(node, _node_status(db, node)))

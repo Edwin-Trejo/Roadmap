@@ -1,9 +1,7 @@
 import {
   addEdge,
   Background,
-  Controls,
   MarkerType,
-  MiniMap,
   ReactFlow,
   useEdgesState,
   useNodesState,
@@ -16,10 +14,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
+import { EdgeToolbar } from '../components/EdgeToolbar'
 import { RoadmapNode, type RoadmapNodeData } from '../components/RoadmapNode'
 import { TaskPanel } from '../components/TaskPanel'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 const nodeTypes = { roadmap: RoadmapNode }
+
+function edgeStyle(color: string) {
+  return { markerEnd: { type: MarkerType.ArrowClosed, color }, style: { stroke: color } }
+}
 
 export function ProjectRoadmap() {
   const { projectId: projectIdParam } = useParams()
@@ -27,6 +31,8 @@ export function ProjectRoadmap() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null)
+  const [selectedEdgeId, setSelectedEdgeId] = useState<number | null>(null)
+  const [nameDraft, setNameDraft] = useState('')
 
   const { data: graph, isLoading } = useQuery({
     queryKey: ['graph', projectId],
@@ -56,9 +62,10 @@ export function ProjectRoadmap() {
         id: String(e.id),
         source: String(e.source_node_id),
         target: String(e.target_node_id),
-        markerEnd: { type: MarkerType.ArrowClosed },
+        ...edgeStyle(e.color),
       })),
     )
+    setNameDraft(graph.name)
   }, [graph, setNodes, setEdges])
 
   const invalidate = useCallback(() => {
@@ -80,6 +87,11 @@ export function ProjectRoadmap() {
       api.updateNode(id, { position_x: x, position_y: y }),
   })
 
+  const renameProject = useMutation({
+    mutationFn: (name: string) => api.updateProject(projectId, { name }),
+    onSuccess: invalidate,
+  })
+
   const createEdgeMutation = useMutation({
     mutationFn: (connection: Connection) =>
       api.createEdge(projectId, Number(connection.source), Number(connection.target)),
@@ -91,6 +103,11 @@ export function ProjectRoadmap() {
     onSuccess: invalidate,
   })
 
+  const updateEdgeColorMutation = useMutation({
+    mutationFn: ({ id, color }: { id: number; color: string }) => api.updateEdge(id, color),
+    onSuccess: invalidate,
+  })
+
   const deleteNodeMutation = useMutation({
     mutationFn: (id: number) => api.deleteNode(id),
     onSuccess: invalidate,
@@ -98,7 +115,7 @@ export function ProjectRoadmap() {
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      setEdges((eds) => addEdge({ ...connection, markerEnd: { type: MarkerType.ArrowClosed } }, eds))
+      setEdges((eds) => addEdge({ ...connection, ...edgeStyle('#8a6d4a') }, eds))
       createEdgeMutation.mutate(connection)
     },
     [setEdges, createEdgeMutation],
@@ -113,11 +130,22 @@ export function ProjectRoadmap() {
 
   const onNodeClick = useCallback((_event: unknown, node: Node) => {
     setSelectedNodeId(Number(node.id))
+    setSelectedEdgeId(null)
+  }, [])
+
+  const onEdgeClick = useCallback((_event: unknown, edge: Edge) => {
+    setSelectedEdgeId(Number(edge.id))
+    setSelectedNodeId(null)
+  }, [])
+
+  const onPaneClick = useCallback(() => {
+    setSelectedEdgeId(null)
   }, [])
 
   const onEdgesDelete = useCallback(
     (deleted: Edge[]) => {
       deleted.forEach((e) => deleteEdgeMutation.mutate(Number(e.id)))
+      setSelectedEdgeId(null)
     },
     [deleteEdgeMutation],
   )
@@ -137,33 +165,56 @@ export function ProjectRoadmap() {
     [graph, selectedNodeId],
   )
 
+  const selectedEdge = useMemo(
+    () => graph?.edges.find((e) => e.id === selectedEdgeId) ?? null,
+    [graph, selectedEdgeId],
+  )
+
   function handleAddNode() {
     createNodeMutation.mutate({ x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 })
   }
 
-  if (isLoading) return <p className="p-10 text-slate-500">Loading…</p>
+  function handleNameBlur() {
+    const trimmed = nameDraft.trim()
+    if (graph && trimmed && trimmed !== graph.name) {
+      renameProject.mutate(trimmed)
+    } else if (graph) {
+      setNameDraft(graph.name)
+    }
+  }
+
+  if (isLoading) return <p className="p-10 text-[var(--ink-muted)]">Loading…</p>
   if (!graph) return null
 
   return (
-    <div className="flex h-screen flex-col">
-      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+    <div className="flex h-screen flex-col bg-[var(--bg)]">
+      <header className="flex items-center justify-between border-b border-[var(--border-earth)] bg-[var(--surface)] px-4 py-3">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
-            className="text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            className="text-sm text-[var(--ink-muted)] hover:text-[var(--ink)]"
           >
             ← Dashboard
           </button>
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            {graph.name}
-          </h1>
+          <input
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onBlur={handleNameBlur}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+            }}
+            className="rounded-md border border-transparent bg-transparent text-lg font-semibold text-[var(--ink)] hover:border-[var(--border-earth)] focus:border-[var(--accent)] focus:outline-none"
+          />
         </div>
-        <button
-          onClick={handleAddNode}
-          className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          + Add Node
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={handleAddNode}
+            className="rounded-md bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]"
+          >
+            + Add Node
+          </button>
+        </div>
       </header>
 
       <div className="relative flex-1">
@@ -176,14 +227,27 @@ export function ProjectRoadmap() {
           onConnect={onConnect}
           onNodeDragStop={onNodeDragStop}
           onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
+          onPaneClick={onPaneClick}
           onNodesDelete={onNodesDelete}
           onEdgesDelete={onEdgesDelete}
           fitView
         >
           <Background />
-          <Controls />
-          <MiniMap />
         </ReactFlow>
+
+        {selectedEdge && (
+          <EdgeToolbar
+            color={selectedEdge.color}
+            onDelete={() => {
+              deleteEdgeMutation.mutate(selectedEdge.id)
+              setSelectedEdgeId(null)
+            }}
+            onColorChange={(color) =>
+              updateEdgeColorMutation.mutate({ id: selectedEdge.id, color })
+            }
+          />
+        )}
 
         {selectedNode && (
           <TaskPanel

@@ -15,7 +15,6 @@ export interface RoadmapNode {
   description: string | null
   position_x: number
   position_y: number
-  status_override: NodeStatus | null
   status: NodeStatus
   total_tasks: number
   done_tasks: number
@@ -27,6 +26,7 @@ export interface Edge {
   project_id: number
   source_node_id: number
   target_node_id: number
+  color: string
 }
 
 export interface ProjectSummary {

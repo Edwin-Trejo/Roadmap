@@ -37,8 +37,6 @@ class NodeUpdate(BaseModel):
     description: Optional[str] = None
     position_x: Optional[float] = None
     position_y: Optional[float] = None
-    status_override: Optional[Status] = None
-    clear_status_override: bool = False
 
 
 class NodeOut(BaseModel):
@@ -50,7 +48,6 @@ class NodeOut(BaseModel):
     description: Optional[str]
     position_x: float
     position_y: float
-    status_override: Optional[Status]
     status: Status
     total_tasks: int
     done_tasks: int
@@ -62,6 +59,10 @@ class EdgeCreate(BaseModel):
     target_node_id: int
 
 
+class EdgeUpdate(BaseModel):
+    color: str
+
+
 class EdgeOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -69,6 +70,7 @@ class EdgeOut(BaseModel):
     project_id: int
     source_node_id: int
     target_node_id: int
+    color: str
 
 
 class ProjectCreate(BaseModel):
