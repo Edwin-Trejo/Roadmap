@@ -17,6 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { AnnotationToolbar, type AnnotationTool } from '../components/AnnotationToolbar'
+import { ControlsLegend } from '../components/ControlsLegend'
 import { ArrowAnnotation } from '../components/annotations/ArrowAnnotation'
 import { CircleAnnotation } from '../components/annotations/CircleAnnotation'
 import { FreehandAnnotation } from '../components/annotations/FreehandAnnotation'
@@ -458,6 +459,8 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
           color={toolColor}
           onColorChange={setToolColor}
         />
+
+        <ControlsLegend />
 
         {selectedEdge && (
           <SelectionToolbar
