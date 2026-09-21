@@ -11,7 +11,13 @@ export function Dashboard() {
   const [showNewProject, setShowNewProject] = useState(false)
   const [name, setName] = useState('')
 
-  const { data: projects, isLoading } = useQuery({
+  const {
+    data: projects,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['projects'],
     queryFn: api.listProjects,
   })
@@ -81,6 +87,28 @@ export function Dashboard() {
         )}
 
         {isLoading && <p className="text-[var(--ink-muted)]">Loading…</p>}
+
+        {isError && (
+          <div className="mb-6 rounded-md border border-[var(--danger)] bg-[var(--surface)] p-4 text-sm text-[var(--danger)]">
+            <p className="mb-2">
+              Couldn't load projects:{' '}
+              {error instanceof Error ? error.message : 'unknown error'}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="rounded-md border border-[var(--danger)] px-3 py-1 text-xs font-medium hover:bg-[var(--danger)] hover:text-[var(--accent-fg)]"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {createProject.isError && (
+          <p className="mb-4 text-sm text-[var(--danger)]">
+            Couldn't create project:{' '}
+            {createProject.error instanceof Error ? createProject.error.message : 'unknown error'}
+          </p>
+        )}
 
         {projects && projects.length === 0 && (
           <p className="text-[var(--ink-muted)]">No projects yet — create your first one above.</p>
