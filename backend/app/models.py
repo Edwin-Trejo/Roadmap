@@ -100,7 +100,13 @@ class Annotation(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"))
-    type: Mapped[AnnotationType] = mapped_column(Enum(AnnotationType, name="annotation_type"))
+    type: Mapped[AnnotationType] = mapped_column(
+        Enum(
+            AnnotationType,
+            name="annotation_type",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        )
+    )
     x: Mapped[float] = mapped_column(Float)
     y: Mapped[float] = mapped_column(Float)
     width: Mapped[float] = mapped_column(Float)
