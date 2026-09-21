@@ -3,6 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from app.models import AnnotationType
 from app.status import Status
 
 
@@ -20,9 +21,14 @@ class TaskOut(BaseModel):
 
     id: int
     node_id: int
+    parent_task_id: Optional[int]
     title: str
     done: bool
     created_at: datetime
+    subtasks: list["TaskOut"] = []
+
+
+TaskOut.model_rebuild()
 
 
 class NodeCreate(BaseModel):
@@ -94,12 +100,48 @@ class ProjectSummary(BaseModel):
     next_step_titles: list[str]
 
 
+class AnnotationCreate(BaseModel):
+    type: AnnotationType
+    x: float
+    y: float
+    width: float
+    height: float
+    points: Optional[list[list[float]]] = None
+    text: Optional[str] = None
+    color: str
+
+
+class AnnotationUpdate(BaseModel):
+    x: Optional[float] = None
+    y: Optional[float] = None
+    width: Optional[float] = None
+    height: Optional[float] = None
+    text: Optional[str] = None
+    color: Optional[str] = None
+
+
+class AnnotationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    project_id: int
+    type: AnnotationType
+    x: float
+    y: float
+    width: float
+    height: float
+    points: Optional[list[list[float]]]
+    text: Optional[str]
+    color: str
+
+
 class ProjectGraph(BaseModel):
     id: int
     name: str
     description: Optional[str]
     nodes: list[NodeOut]
     edges: list[EdgeOut]
+    annotations: list[AnnotationOut]
 
 
 class LoginRequest(BaseModel):

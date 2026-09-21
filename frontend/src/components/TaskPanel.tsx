@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { api } from '../api/client'
-import type { RoadmapNode } from '../api/types'
+import type { RoadmapNode, Task } from '../api/types'
 import { ConfirmButton } from './ConfirmButton'
 
 export function TaskPanel({
@@ -16,6 +16,8 @@ export function TaskPanel({
   const queryClient = useQueryClient()
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [titleDraft, setTitleDraft] = useState(node.title)
+  const [subtaskFormFor, setSubtaskFormFor] = useState<number | null>(null)
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
 
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: ['graph', projectId] })
@@ -44,6 +46,16 @@ export function TaskPanel({
     onSuccess: invalidate,
   })
 
+  const addSubtask = useMutation({
+    mutationFn: ({ taskId, title }: { taskId: number; title: string }) =>
+      api.createSubtask(taskId, title),
+    onSuccess: () => {
+      setSubtaskFormFor(null)
+      setNewSubtaskTitle('')
+      invalidate()
+    },
+  })
+
   const deleteNode = useMutation({
     mutationFn: () => api.deleteNode(node.id),
     onSuccess: () => {
@@ -57,6 +69,11 @@ export function TaskPanel({
     if (newTaskTitle.trim()) addTask.mutate(newTaskTitle.trim())
   }
 
+  function handleAddSubtask(e: FormEvent, taskId: number) {
+    e.preventDefault()
+    if (newSubtaskTitle.trim()) addSubtask.mutate({ taskId, title: newSubtaskTitle.trim() })
+  }
+
   function handleTitleBlur() {
     const trimmed = titleDraft.trim()
     if (trimmed && trimmed !== node.title) {
@@ -64,6 +81,74 @@ export function TaskPanel({
     } else {
       setTitleDraft(node.title)
     }
+  }
+
+  function renderTaskRow(task: Task, isSubtask: boolean) {
+    const hasSubtasks = task.subtasks.length > 0
+    return (
+      <li key={task.id} className={isSubtask ? 'ml-6' : ''}>
+        <div className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={task.done}
+            disabled={hasSubtasks}
+            title={hasSubtasks ? 'Completes automatically once all subtasks are done' : undefined}
+            onChange={(e) => toggleTask.mutate({ id: task.id, done: e.target.checked })}
+          />
+          <span
+            className={
+              task.done
+                ? 'flex-1 text-[var(--ink-muted)] line-through'
+                : 'flex-1 text-[var(--ink)]'
+            }
+          >
+            {task.title}
+          </span>
+          {!isSubtask && (
+            <button
+              onClick={() => setSubtaskFormFor(subtaskFormFor === task.id ? null : task.id)}
+              className="text-xs text-[var(--ink-muted)] hover:text-[var(--accent)]"
+            >
+              + subtask
+            </button>
+          )}
+          <button
+            onClick={() => deleteTask.mutate(task.id)}
+            aria-label={`Delete ${task.title}`}
+            className="text-[var(--ink-muted)] hover:text-[var(--danger)]"
+          >
+            ✕
+          </button>
+        </div>
+
+        {!isSubtask && task.subtasks.length > 0 && (
+          <ul className="mt-1 space-y-1">
+            {task.subtasks.map((subtask) => renderTaskRow(subtask, true))}
+          </ul>
+        )}
+
+        {!isSubtask && subtaskFormFor === task.id && (
+          <form
+            onSubmit={(e) => handleAddSubtask(e, task.id)}
+            className="ml-6 mt-1 flex gap-2"
+          >
+            <input
+              autoFocus
+              value={newSubtaskTitle}
+              onChange={(e) => setNewSubtaskTitle(e.target.value)}
+              placeholder="Add a subtask"
+              className="flex-1 rounded-md border border-[var(--border-earth)] bg-[var(--surface)] px-2 py-1 text-xs text-[var(--ink)]"
+            />
+            <button
+              type="submit"
+              className="rounded-md bg-[var(--accent)] px-2 py-1 text-xs font-medium text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]"
+            >
+              Add
+            </button>
+          </form>
+        )}
+      </li>
+    )
   }
 
   return (
@@ -89,31 +174,7 @@ export function TaskPanel({
 
       <h3 className="mb-2 text-xs font-medium uppercase text-[var(--ink-muted)]">Tasks</h3>
       <ul className="mb-4 flex-1 space-y-2 overflow-y-auto">
-        {node.tasks.map((task) => (
-          <li key={task.id} className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={task.done}
-              onChange={(e) => toggleTask.mutate({ id: task.id, done: e.target.checked })}
-            />
-            <span
-              className={
-                task.done
-                  ? 'flex-1 text-[var(--ink-muted)] line-through'
-                  : 'flex-1 text-[var(--ink)]'
-              }
-            >
-              {task.title}
-            </span>
-            <button
-              onClick={() => deleteTask.mutate(task.id)}
-              aria-label={`Delete ${task.title}`}
-              className="text-[var(--ink-muted)] hover:text-[var(--danger)]"
-            >
-              ✕
-            </button>
-          </li>
-        ))}
+        {node.tasks.map((task) => renderTaskRow(task, false))}
         {node.tasks.length === 0 && (
           <li className="text-sm text-[var(--ink-muted)]">No tasks yet.</li>
         )}

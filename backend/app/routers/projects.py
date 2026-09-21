@@ -13,7 +13,11 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 def _get_project_or_404(db: Session, project_id: int) -> Project:
     project = (
         db.query(Project)
-        .options(selectinload(Project.nodes).selectinload(Node.tasks), selectinload(Project.edges))
+        .options(
+            selectinload(Project.nodes).selectinload(Node.tasks),
+            selectinload(Project.edges),
+            selectinload(Project.annotations),
+        )
         .filter(Project.id == project_id)
         .first()
     )
@@ -121,4 +125,5 @@ def get_project_graph(
         description=project.description,
         nodes=nodes,
         edges=project.edges,
+        annotations=project.annotations,
     )

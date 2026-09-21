@@ -1,8 +1,10 @@
 export const EDGE_COLOR_PALETTE = [
-  '#8a6d4a', // clay (default)
+  '#cc5500', // burnt orange (default)
+  '#b22222', // firebrick
+  '#daa520', // goldenrod
+  '#6b8e23', // olive drab
   '#a0522d', // sienna
-  '#5f7a3d', // moss
-  '#b8860b', // ochre
-  '#8a7f6a', // taupe
-  '#6b4226', // umber
+  '#8b4513', // saddle brown
 ] as const
+
+export const DEFAULT_EDGE_COLOR = EDGE_COLOR_PALETTE[0]

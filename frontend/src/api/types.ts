@@ -3,9 +3,11 @@ export type NodeStatus = 'complete' | 'in_progress' | 'next' | 'locked'
 export interface Task {
   id: number
   node_id: number
+  parent_task_id: number | null
   title: string
   done: boolean
   created_at: string
+  subtasks: Task[]
 }
 
 export interface RoadmapNode {
@@ -29,6 +31,21 @@ export interface Edge {
   color: string
 }
 
+export type AnnotationType = 'rectangle' | 'circle' | 'arrow' | 'text' | 'freehand'
+
+export interface Annotation {
+  id: number
+  project_id: number
+  type: AnnotationType
+  x: number
+  y: number
+  width: number
+  height: number
+  points: [number, number][] | null
+  text: string | null
+  color: string
+}
+
 export interface ProjectSummary {
   id: number
   name: string
@@ -44,4 +61,5 @@ export interface ProjectGraph {
   description: string | null
   nodes: RoadmapNode[]
   edges: Edge[]
+  annotations: Annotation[]
 }

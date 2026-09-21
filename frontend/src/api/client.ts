@@ -122,4 +122,47 @@ export const api = {
     }),
 
   deleteTask: (taskId: number) => request<void>(`/tasks/${taskId}`, { method: 'DELETE' }),
+
+  createSubtask: (taskId: number, title: string) =>
+    request<import('./types').Task>(`/tasks/${taskId}/subtasks`, {
+      method: 'POST',
+      body: JSON.stringify({ title }),
+    }),
+
+  createAnnotation: (
+    projectId: number,
+    data: {
+      type: import('./types').AnnotationType
+      x: number
+      y: number
+      width: number
+      height: number
+      points?: [number, number][] | null
+      text?: string | null
+      color: string
+    },
+  ) =>
+    request<import('./types').Annotation>(`/projects/${projectId}/annotations`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateAnnotation: (
+    annotationId: number,
+    data: Partial<{
+      x: number
+      y: number
+      width: number
+      height: number
+      text: string
+      color: string
+    }>,
+  ) =>
+    request<import('./types').Annotation>(`/annotations/${annotationId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deleteAnnotation: (annotationId: number) =>
+    request<void>(`/annotations/${annotationId}`, { method: 'DELETE' }),
 }
