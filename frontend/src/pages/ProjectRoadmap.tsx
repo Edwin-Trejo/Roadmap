@@ -242,15 +242,17 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
   )
 
   const onNodeDragStop = useCallback(
-    (_event: unknown, node: Node) => {
-      if (isAnnotationNodeId(node.id)) {
-        updateAnnotationMutation.mutate({
-          id: annotationDbId(node.id),
-          data: { x: node.position.x, y: node.position.y },
-        })
-      } else {
-        updatePosition.mutate({ id: Number(node.id), x: node.position.x, y: node.position.y })
-      }
+    (_event: unknown, _node: Node, draggedNodes: Node[]) => {
+      draggedNodes.forEach((node) => {
+        if (isAnnotationNodeId(node.id)) {
+          updateAnnotationMutation.mutate({
+            id: annotationDbId(node.id),
+            data: { x: node.position.x, y: node.position.y },
+          })
+        } else {
+          updatePosition.mutate({ id: Number(node.id), x: node.position.x, y: node.position.y })
+        }
+      })
     },
     [updatePosition, updateAnnotationMutation],
   )
@@ -343,7 +345,6 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
       color: toolColor,
       text: activeTool === 'text' ? '' : undefined,
     })
-    setActiveTool('select')
   }
 
   function handleOverlayMouseDown(e: React.MouseEvent) {
@@ -381,7 +382,6 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
       }
       return null
     })
-    setActiveTool('select')
   }
 
   if (isLoading) return <p className="p-10 text-[var(--ink-muted)]">Loading…</p>
@@ -432,6 +432,8 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
           onPaneClick={onPaneClick}
           onNodesDelete={onNodesDelete}
           onEdgesDelete={onEdgesDelete}
+          panOnDrag={[1, 2]}
+          selectionOnDrag
           fitView
         >
           <Background />
