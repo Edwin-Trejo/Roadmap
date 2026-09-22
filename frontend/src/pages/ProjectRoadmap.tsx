@@ -25,6 +25,7 @@ import { RectangleAnnotation } from '../components/annotations/RectangleAnnotati
 import { TextAnnotation } from '../components/annotations/TextAnnotation'
 import { RoadmapNode } from '../components/RoadmapNode'
 import { SelectionToolbar } from '../components/SelectionToolbar'
+import { TableView } from '../components/TableView'
 import { TaskPanel } from '../components/TaskPanel'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { normalizePoints, type Point } from '../lib/geometry'
@@ -62,6 +63,7 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
   const [selectedEdgeId, setSelectedEdgeId] = useState<number | null>(null)
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<number | null>(null)
   const [nameDraft, setNameDraft] = useState('')
+  const [view, setView] = useState<'graph' | 'table'>('graph')
   const [activeTool, setActiveTool] = useState<AnnotationTool>('select')
   const [toolColor, setToolColor] = useState<string>(EDGE_COLOR_PALETTE[0])
   const [drawingPoints, setDrawingPoints] = useState<Point[] | null>(null)
@@ -397,25 +399,48 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
 
   return (
     <div className="flex h-screen flex-col bg-[var(--bg)]">
-      <header className="flex items-center justify-between border-b border-[var(--border-earth)] bg-[var(--surface)] px-4 py-3">
-        <div className="flex items-center gap-3">
+      <header className="flex items-center gap-3 border-b border-[var(--border-earth)] bg-[var(--surface)] px-4 py-3">
+        <button
+          onClick={() => navigate('/')}
+          className="shrink-0 text-sm text-[var(--ink-muted)] hover:text-[var(--ink)]"
+        >
+          ← Dashboard
+        </button>
+        <input
+          value={nameDraft}
+          onChange={(e) => setNameDraft(e.target.value)}
+          onBlur={handleNameBlur}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+          }}
+          className={
+            'min-w-0 flex-1 rounded-md border border-transparent bg-transparent font-semibold text-[var(--ink)] hover:border-[var(--border-earth)] focus:border-[var(--accent)] focus:outline-none ' +
+            (nameDraft.length > 40 ? 'text-sm' : nameDraft.length > 25 ? 'text-base' : 'text-lg')
+          }
+        />
+        <div className="flex shrink-0 items-center rounded-md border border-[var(--border-earth)] p-0.5">
           <button
-            onClick={() => navigate('/')}
-            className="text-sm text-[var(--ink-muted)] hover:text-[var(--ink)]"
+            onClick={() => setView('graph')}
+            className={
+              view === 'graph'
+                ? 'rounded px-2.5 py-1 text-xs font-medium bg-[var(--accent)] text-[var(--accent-fg)]'
+                : 'rounded px-2.5 py-1 text-xs font-medium text-[var(--ink-muted)] hover:text-[var(--ink)]'
+            }
           >
-            ← Dashboard
+            Graph
           </button>
-          <input
-            value={nameDraft}
-            onChange={(e) => setNameDraft(e.target.value)}
-            onBlur={handleNameBlur}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-            }}
-            className="rounded-md border border-transparent bg-transparent text-lg font-semibold text-[var(--ink)] hover:border-[var(--border-earth)] focus:border-[var(--accent)] focus:outline-none"
-          />
+          <button
+            onClick={() => setView('table')}
+            className={
+              view === 'table'
+                ? 'rounded px-2.5 py-1 text-xs font-medium bg-[var(--accent)] text-[var(--accent-fg)]'
+                : 'rounded px-2.5 py-1 text-xs font-medium text-[var(--ink-muted)] hover:text-[var(--ink)]'
+            }
+          >
+            Table
+          </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <ThemeToggle />
           <button
             onClick={handleAddNode}
@@ -426,6 +451,11 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
         </div>
       </header>
 
+      {view === 'table' ? (
+        <div className="flex-1 overflow-hidden">
+          <TableView graph={graph} projectId={projectId} />
+        </div>
+      ) : (
       <div className="relative flex-1">
         <ReactFlow
           nodes={displayNodes}
@@ -501,6 +531,7 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
           />
         )}
       </div>
+      )}
     </div>
   )
 }
