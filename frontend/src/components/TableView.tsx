@@ -2,10 +2,12 @@ import type { ProjectGraph } from '../api/types'
 import { getNodeConnections } from '../lib/connections'
 import { NodeCard } from './NodeCard'
 
+const BADGE_TEXT = '#fdfbf5'
+
 const COLUMNS = [
-  { key: 'complete', label: 'Completed', statuses: ['complete'] },
-  { key: 'active', label: 'In Progress', statuses: ['in_progress', 'next'] },
-  { key: 'locked', label: 'Locked', statuses: ['locked'] },
+  { key: 'complete', label: 'Completed', statuses: ['complete'], badgeColor: '#5f7a3d' },
+  { key: 'active', label: 'In Progress', statuses: ['in_progress', 'next'], badgeColor: '#c07a1e' },
+  { key: 'locked', label: 'Locked', statuses: ['locked'], badgeColor: '#a13a2b' },
 ] as const
 
 export function TableView({ graph, projectId }: { graph: ProjectGraph; projectId: number }) {
@@ -19,8 +21,13 @@ export function TableView({ graph, projectId }: { graph: ProjectGraph; projectId
         )
         return (
           <div key={column.key} className="flex flex-col overflow-hidden">
-            <h2 className="mb-3 shrink-0 text-sm font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-              {column.label} ({nodes.length})
+            <h2 className="mb-3 shrink-0">
+              <span
+                className="inline-block rounded-md px-3 py-1.5 text-sm font-semibold uppercase tracking-wide"
+                style={{ backgroundColor: column.badgeColor, color: BADGE_TEXT }}
+              >
+                {column.label} ({nodes.length})
+              </span>
             </h2>
             <div className="flex-1 space-y-3 overflow-y-auto pr-1">
               {nodes.map((node) => {
