@@ -321,7 +321,14 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
   )
 
   function handleAddNode() {
-    createNodeMutation.mutate({ x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 })
+    const latestNode = graph?.nodes.reduce<(typeof graph.nodes)[number] | null>(
+      (latest, n) => (!latest || n.id > latest.id ? n : latest),
+      null,
+    )
+    const position = latestNode
+      ? { x: latestNode.position_x + 220, y: latestNode.position_y + (Math.random() - 0.5) * 60 }
+      : { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }
+    createNodeMutation.mutate(position)
   }
 
   function handleNameBlur() {
@@ -458,22 +465,19 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
           onToolChange={setActiveTool}
           color={toolColor}
           onColorChange={setToolColor}
+          selectedLineColor={selectedEdge?.color}
+          onDeleteLine={() => {
+            if (!selectedEdge) return
+            deleteEdgeMutation.mutate(selectedEdge.id)
+            setSelectedEdgeId(null)
+          }}
+          onLineColorChange={(color) => {
+            if (!selectedEdge) return
+            updateEdgeColorMutation.mutate({ id: selectedEdge.id, color })
+          }}
         />
 
         <ControlsLegend />
-
-        {selectedEdge && (
-          <SelectionToolbar
-            color={selectedEdge.color}
-            onDelete={() => {
-              deleteEdgeMutation.mutate(selectedEdge.id)
-              setSelectedEdgeId(null)
-            }}
-            onColorChange={(color) =>
-              updateEdgeColorMutation.mutate({ id: selectedEdge.id, color })
-            }
-          />
-        )}
 
         {selectedAnnotation && (
           <SelectionToolbar

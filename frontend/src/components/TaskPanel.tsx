@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react'
 import { api } from '../api/client'
 import type { RoadmapNode, Task } from '../api/types'
 import { ConfirmButton } from './ConfirmButton'
+import { EditableTaskTitle } from './EditableTaskTitle'
 
 export function TaskPanel({
   node,
@@ -43,6 +44,11 @@ export function TaskPanel({
 
   const deleteTask = useMutation({
     mutationFn: (id: number) => api.deleteTask(id),
+    onSuccess: invalidate,
+  })
+
+  const renameTask = useMutation({
+    mutationFn: ({ id, title }: { id: number; title: string }) => api.updateTask(id, { title }),
     onSuccess: invalidate,
   })
 
@@ -95,15 +101,11 @@ export function TaskPanel({
             title={hasSubtasks ? 'Completes automatically once all subtasks are done' : undefined}
             onChange={(e) => toggleTask.mutate({ id: task.id, done: e.target.checked })}
           />
-          <span
-            className={
-              task.done
-                ? 'flex-1 text-[var(--ink-muted)] line-through'
-                : 'flex-1 text-[var(--ink)]'
-            }
-          >
-            {task.title}
-          </span>
+          <EditableTaskTitle
+            title={task.title}
+            done={task.done}
+            onRename={(title) => renameTask.mutate({ id: task.id, title })}
+          />
           {!isSubtask && (
             <button
               onClick={() => setSubtaskFormFor(subtaskFormFor === task.id ? null : task.id)}
