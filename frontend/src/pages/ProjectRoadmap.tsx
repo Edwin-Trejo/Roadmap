@@ -416,8 +416,8 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
               if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
             }}
             className={
-              'min-w-0 max-w-[180px] rounded-md border border-transparent bg-transparent font-semibold text-[var(--ink)] hover:border-[var(--border-earth)] focus:border-[var(--accent)] focus:outline-none ' +
-              (nameDraft.length > 30 ? 'text-xs' : nameDraft.length > 18 ? 'text-sm' : 'text-base')
+              'min-w-0 max-w-[280px] rounded-md border border-transparent bg-transparent font-semibold text-[var(--ink)] hover:border-[var(--border-earth)] focus:border-[var(--accent)] focus:outline-none ' +
+              (nameDraft.length > 45 ? 'text-xs' : nameDraft.length > 28 ? 'text-sm' : 'text-base')
             }
           />
         </div>

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { api } from '../api/client'
-import type { ProjectGraph, Task } from '../api/types'
+import type { ProjectGraph, RoadmapNode, Task } from '../api/types'
 
 function TaskNotesTextarea({ task, projectId }: { task: Task; projectId: number }) {
   const queryClient = useQueryClient()
@@ -23,7 +23,7 @@ function TaskNotesTextarea({ task, projectId }: { task: Task; projectId: number 
       onBlur={handleBlur}
       placeholder="Add notes…"
       rows={3}
-      className="w-full resize-y rounded-md border border-[var(--border-earth)] bg-[var(--surface)] p-2 text-sm text-[var(--ink)] focus:border-[var(--accent)] focus:outline-none"
+      className="w-full resize-y rounded-md border border-[var(--border-earth)] bg-[var(--surface)] p-2 text-xs text-[var(--ink)] focus:border-[var(--accent)] focus:outline-none"
     />
   )
 }
@@ -38,8 +38,16 @@ function TaskNotesRow({
   indented: boolean
 }) {
   return (
-    <div className={indented ? 'ml-6' : ''}>
-      <div className="mb-1 text-sm font-medium text-[var(--ink)]">{task.title}</div>
+    <div className={indented ? 'ml-4' : ''}>
+      <div
+        className={
+          task.done
+            ? 'mb-1 text-sm font-medium text-[var(--ink-muted)] line-through'
+            : 'mb-1 text-sm font-medium text-[var(--ink)]'
+        }
+      >
+        {task.title}
+      </div>
       <TaskNotesTextarea task={task} projectId={projectId} />
       {!indented && task.subtasks.length > 0 && (
         <div className="mt-3 space-y-3">
@@ -52,28 +60,34 @@ function TaskNotesRow({
   )
 }
 
+function NodeNotesCard({ node, projectId }: { node: RoadmapNode; projectId: number }) {
+  return (
+    <div className="flex flex-col rounded-lg border border-[var(--border-earth)] bg-[var(--surface)] p-4 shadow-sm">
+      <h2 className="mb-3 text-sm font-semibold text-[var(--ink)]">{node.title}</h2>
+      {node.tasks.length === 0 ? (
+        <p className="text-xs text-[var(--ink-muted)]">No tasks in this phase.</p>
+      ) : (
+        <div className="space-y-4">
+          {node.tasks.map((task) => (
+            <TaskNotesRow key={task.id} task={task} projectId={projectId} indented={false} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function NotesView({ graph, projectId }: { graph: ProjectGraph; projectId: number }) {
   return (
-    <div className="h-full overflow-y-auto p-6">
-      <div className="mx-auto max-w-3xl space-y-8">
+    <div className="h-full overflow-y-auto p-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {graph.nodes.map((node) => (
-          <section key={node.id}>
-            <h2 className="mb-3 text-base font-semibold text-[var(--ink)]">{node.title}</h2>
-            {node.tasks.length === 0 ? (
-              <p className="text-sm text-[var(--ink-muted)]">No tasks in this phase.</p>
-            ) : (
-              <div className="space-y-4">
-                {node.tasks.map((task) => (
-                  <TaskNotesRow key={task.id} task={task} projectId={projectId} indented={false} />
-                ))}
-              </div>
-            )}
-          </section>
+          <NodeNotesCard key={node.id} node={node} projectId={projectId} />
         ))}
-        {graph.nodes.length === 0 && (
-          <p className="text-sm text-[var(--ink-muted)]">No phases yet.</p>
-        )}
       </div>
+      {graph.nodes.length === 0 && (
+        <p className="text-sm text-[var(--ink-muted)]">No phases yet.</p>
+      )}
     </div>
   )
 }
