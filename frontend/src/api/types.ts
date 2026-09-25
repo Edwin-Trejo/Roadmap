@@ -6,7 +6,6 @@ export interface Task {
   parent_task_id: number | null
   title: string
   done: boolean
-  notes: string | null
   created_at: string
   subtasks: Task[]
 }
