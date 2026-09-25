@@ -109,3 +109,22 @@ def test_task_crud(client, auth_headers):
 
     tasks = client.get(f"/nodes/{node['id']}/tasks", headers=auth_headers).json()
     assert tasks == []
+
+
+def test_task_notes_default_to_none_and_can_be_set(client, auth_headers):
+    project_id = _make_project(client, auth_headers)
+    node = client.post(
+        f"/projects/{project_id}/nodes", json={"title": "N"}, headers=auth_headers
+    ).json()
+    task = client.post(
+        f"/nodes/{node['id']}/tasks", json={"title": "Research hydroponics"}, headers=auth_headers
+    ).json()
+    assert task["notes"] is None
+
+    resp = client.put(
+        f"/tasks/{task['id']}",
+        json={"notes": "We researched Kratky hydroponic systems and found..."},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["notes"] == "We researched Kratky hydroponic systems and found..."

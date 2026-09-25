@@ -93,6 +93,8 @@ def update_task(
         task.title = payload.title
     if payload.done is not None and not task.subtasks:
         task.done = payload.done
+    if payload.notes is not None:
+        task.notes = payload.notes
     db.commit()
     _recompute_parent(db, task.parent_task_id)
     db.refresh(task)

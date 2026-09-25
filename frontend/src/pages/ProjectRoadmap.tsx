@@ -25,6 +25,7 @@ import { RectangleAnnotation } from '../components/annotations/RectangleAnnotati
 import { TextAnnotation } from '../components/annotations/TextAnnotation'
 import { RoadmapNode } from '../components/RoadmapNode'
 import { SelectionToolbar } from '../components/SelectionToolbar'
+import { NotesView } from '../components/NotesView'
 import { TableView } from '../components/TableView'
 import { TaskPanel } from '../components/TaskPanel'
 import { ThemeToggle } from '../components/ThemeToggle'
@@ -63,7 +64,7 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
   const [selectedEdgeId, setSelectedEdgeId] = useState<number | null>(null)
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<number | null>(null)
   const [nameDraft, setNameDraft] = useState('')
-  const [view, setView] = useState<'graph' | 'table'>('graph')
+  const [view, setView] = useState<'graph' | 'table' | 'notes'>('graph')
   const [activeTool, setActiveTool] = useState<AnnotationTool>('select')
   const [toolColor, setToolColor] = useState<string>(EDGE_COLOR_PALETTE[0])
   const [drawingPoints, setDrawingPoints] = useState<Point[] | null>(null)
@@ -399,32 +400,35 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
 
   return (
     <div className="flex h-screen flex-col bg-[var(--bg)]">
-      <header className="flex items-center gap-3 border-b border-[var(--border-earth)] bg-[var(--surface)] px-4 py-3">
-        <button
-          onClick={() => navigate('/')}
-          className="shrink-0 text-sm text-[var(--ink-muted)] hover:text-[var(--ink)]"
-        >
-          ← Dashboard
-        </button>
-        <input
-          value={nameDraft}
-          onChange={(e) => setNameDraft(e.target.value)}
-          onBlur={handleNameBlur}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-          }}
-          className={
-            'min-w-0 flex-1 rounded-md border border-transparent bg-transparent font-semibold text-[var(--ink)] hover:border-[var(--border-earth)] focus:border-[var(--accent)] focus:outline-none ' +
-            (nameDraft.length > 40 ? 'text-sm' : nameDraft.length > 25 ? 'text-base' : 'text-lg')
-          }
-        />
-        <div className="flex shrink-0 items-center rounded-md border border-[var(--border-earth)] p-0.5">
+      <header className="grid grid-cols-3 items-center gap-3 border-b border-[var(--border-earth)] bg-[var(--surface)] px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2 justify-self-start">
+          <button
+            onClick={() => navigate('/')}
+            className="shrink-0 text-sm text-[var(--ink-muted)] hover:text-[var(--ink)]"
+          >
+            ← Dashboard
+          </button>
+          <input
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onBlur={handleNameBlur}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+            }}
+            className={
+              'min-w-0 max-w-[180px] rounded-md border border-transparent bg-transparent font-semibold text-[var(--ink)] hover:border-[var(--border-earth)] focus:border-[var(--accent)] focus:outline-none ' +
+              (nameDraft.length > 30 ? 'text-xs' : nameDraft.length > 18 ? 'text-sm' : 'text-base')
+            }
+          />
+        </div>
+
+        <div className="flex items-center justify-self-center rounded-md border border-[var(--border-earth)] p-0.5">
           <button
             onClick={() => setView('graph')}
             className={
               view === 'graph'
-                ? 'rounded px-2.5 py-1 text-xs font-medium bg-[var(--accent)] text-[var(--accent-fg)]'
-                : 'rounded px-2.5 py-1 text-xs font-medium text-[var(--ink-muted)] hover:text-[var(--ink)]'
+                ? 'rounded px-3 py-1 text-xs font-medium bg-[var(--accent)] text-[var(--accent-fg)]'
+                : 'rounded px-3 py-1 text-xs font-medium text-[var(--ink-muted)] hover:text-[var(--ink)]'
             }
           >
             Graph
@@ -433,14 +437,25 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
             onClick={() => setView('table')}
             className={
               view === 'table'
-                ? 'rounded px-2.5 py-1 text-xs font-medium bg-[var(--accent)] text-[var(--accent-fg)]'
-                : 'rounded px-2.5 py-1 text-xs font-medium text-[var(--ink-muted)] hover:text-[var(--ink)]'
+                ? 'rounded px-3 py-1 text-xs font-medium bg-[var(--accent)] text-[var(--accent-fg)]'
+                : 'rounded px-3 py-1 text-xs font-medium text-[var(--ink-muted)] hover:text-[var(--ink)]'
             }
           >
             Table
           </button>
+          <button
+            onClick={() => setView('notes')}
+            className={
+              view === 'notes'
+                ? 'rounded px-3 py-1 text-xs font-medium bg-[var(--accent)] text-[var(--accent-fg)]'
+                : 'rounded px-3 py-1 text-xs font-medium text-[var(--ink-muted)] hover:text-[var(--ink)]'
+            }
+          >
+            Notes
+          </button>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+
+        <div className="flex items-center gap-2 justify-self-end">
           <ThemeToggle />
           <button
             onClick={handleAddNode}
@@ -454,6 +469,10 @@ function ProjectRoadmapCanvas({ projectId }: { projectId: number }) {
       {view === 'table' ? (
         <div className="flex-1 overflow-hidden">
           <TableView graph={graph} projectId={projectId} />
+        </div>
+      ) : view === 'notes' ? (
+        <div className="flex-1 overflow-hidden">
+          <NotesView graph={graph} projectId={projectId} />
         </div>
       ) : (
       <div className="relative flex-1">

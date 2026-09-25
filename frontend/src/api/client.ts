@@ -115,7 +115,7 @@ export const api = {
       body: JSON.stringify({ title }),
     }),
 
-  updateTask: (taskId: number, data: Partial<{ title: string; done: boolean }>) =>
+  updateTask: (taskId: number, data: Partial<{ title: string; done: boolean; notes: string }>) =>
     request<import('./types').Task>(`/tasks/${taskId}`, {
       method: 'PUT',
       body: JSON.stringify(data),

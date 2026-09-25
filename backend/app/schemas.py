@@ -14,6 +14,7 @@ class TaskCreate(BaseModel):
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     done: Optional[bool] = None
+    notes: Optional[str] = None
 
 
 class TaskOut(BaseModel):
@@ -24,6 +25,7 @@ class TaskOut(BaseModel):
     parent_task_id: Optional[int]
     title: str
     done: bool
+    notes: Optional[str]
     created_at: datetime
     subtasks: list["TaskOut"] = []
 
