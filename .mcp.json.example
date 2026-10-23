@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "roadmap": {
+      "type": "http",
+      "url": "http://roadmaptool:8001/mcp"
+    }
+  }
+}

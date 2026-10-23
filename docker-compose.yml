@@ -39,5 +39,18 @@ services:
     ports:
       - "4173:4173"
 
+  mcp:
+    build: ./mcp-server
+    restart: unless-stopped
+    environment:
+      ROADMAP_API_URL: http://api:8000
+      ROADMAP_USERNAME: ${ROADMAP_USERNAME:-edwin}
+      ROADMAP_PASSWORD: ${ROADMAP_PASSWORD:-change-me}
+      MCP_ALLOWED_HOSTS: ${MCP_ALLOWED_HOSTS:-roadmaptool:8001}
+    depends_on:
+      - api
+    ports:
+      - "8001:8001"
+
 volumes:
   postgres_data:
